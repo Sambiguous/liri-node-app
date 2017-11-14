@@ -4,11 +4,8 @@ var Twitter = require("twitter");
 var Spotify = require("node-spotify-api");
 var fs = require("fs");
 
-
 var command = process.argv[2].toLowerCase();
 var search = process.argv.slice(3, process.argv.length).join(" ");
-
-
 
 function displayTweet(number, timestamp, tweet){
     var line = 1;
@@ -30,49 +27,28 @@ function displayTweet(number, timestamp, tweet){
     console.log("");
 };
 
-// function displayTrack(track){
+function displayTrack(track){
 
-//     var song = "\tSong: " + track.name;
-//     var album = "\tAlbum: " + track.album_type.name;
-//     var prev = "\tPreview: No preview link available";
-//     var artists = "\tArtist(s): ";
+    var song = "\tSong: " + track.name;
+    var album = "\tAlbum: " + track.album.name;
+    var prev = "\tPreview: No preview link available";
+    var artists = "\tArtist(s): ";
     
-//     for(var i in track.artists){
-//         if(i > 0){
-//             artists += ", ";
-//         };
-//         artists += track.artists[i].name;
-//     };
-
-//     if(track.preview_url !== null){
-//         prev = "Prewiew: " + track.preview_url;
-//     };
-
-//     console.log(artists);
-//     console.log(song);
-//     console.log(album);
-//     console.log(prev);
-// };
-
-function displayTrack(artists, track, album, link){
-    var prev = "No preview link available";
-    var artist = "";
-
-    for(var i in artists){
+    for(var i in track.artists){
         if(i > 0){
-            artist += ", ";
+            artists += ", ";
         };
-        artist += artists[i].name;
+        artists += track.artists[i].name;
     };
 
-    if(link !== null){
-        prev = link;
+    if(track.preview_url !== null){
+        prev = "Prewiew: " + track.preview_url;
     };
 
-    console.log("\n\tArtist(s): " + artist + "\n");
-    console.log("\tSong: " + track + "\n");
-    console.log("\tAlbum: " + album.name + " (" + album.album_type + ")\n");
-    console.log("\tPreview: " + prev + "\n");
+    console.log(artists);
+    console.log(song);
+    console.log(album);
+    console.log(prev);
 };
 
 function getMovieRating(ratings, source){
@@ -87,7 +63,7 @@ function formatPlot(plot){
     var line = 1;
     var newLine = "\n\t\t\b\b";
     var arr = plot.split(" ");
-    var formattedPlot = ""
+    var formattedPlot = "";
 
 
     for(var i in arr){
@@ -96,9 +72,9 @@ function formatPlot(plot){
             line++;
         };
         formattedPlot += arr[i] + " ";
-    }
+    };
     return formattedPlot.trim();
-}
+};
 
 function displayMovie(movie){
     console.log("\n\tTitle: " +  movie.Title + "\n");
@@ -111,7 +87,7 @@ function displayMovie(movie){
     console.log("\tActors: " + movie.Actors + "\n");
 };
 
-function liri(cmd, search){
+function main(cmd, search){
 
     if(cmd === "my-tweets"){
         var client = new Twitter(keys.twitter);
@@ -137,8 +113,7 @@ function liri(cmd, search){
 
         spotify.search({type: "track", query: search}, function(err, data){
             var track = data.tracks.items[0];
-            displayTrack(track.artists, track.name, track.album, track.preview_url);
-            //displayTrack(track);
+            displayTrack(track);
         });
     }
     else if(cmd === "movie-this"){
@@ -147,27 +122,40 @@ function liri(cmd, search){
         else{movie = search;};
 
         var url = "https://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=" + keys.omdb;
+
         request(url, function(err, response, body){
+
+            //handle errors
             if(err){
                 console.log(err);
             }
+
+            //if no error and response code is 200...
             else if(response.statusCode === 200){
+                
+                //format and display important info
                 displayMovie(JSON.parse(body));
             }
         });
     }
     else if(cmd === "do-what-it-says"){
+        //open and read the random.txt file
         fs.readFile("./random.txt", "utf-8", function(err, data){
+
+            //split contents of file into an array with comma as the delimiter
             var arr = data.split(",");
+
+            //protect against infinite loop of death
             if(arr[0] !== "do-what-it-says"){
                 var cmd = arr[0];
                 var search = arr[1].replace(/"/g, '');
-                liri(cmd, search);
+
+                //call main function with the contents of the random.txt file as parameters
+                main(cmd, search);
 
             };
         });
     };
 };
 
-
-liri(command, search);
+main(command, search);
