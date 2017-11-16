@@ -7,6 +7,13 @@ var fs = require("fs");
 var command = process.argv[2].toLowerCase();
 var search = process.argv.slice(3, process.argv.length).join(" ");
 
+var logDvdr = "----------------------------------------------------------------------------------------------------";
+
+
+fs.appendFile('log.txt', logDvdr + "\n" + logDvdr + "\nCommand: " + command + "\nSearch: " + search + "\n");
+
+
+
 function displayTweet(number, timestamp, tweet){
     var line = 1;
     var num = number.toString() + ".";
@@ -21,10 +28,8 @@ function displayTweet(number, timestamp, tweet){
         };
         text += arr[i] + " ";
     };
-    console.log("\n" + num + "\t" + time);
-    console.log(text);
-    console.log("");
-    console.log("");
+    console.log("\n" + num + "\t" + time + "\n" + text + "\n\n");
+    fs.appendFile('log.txt', "\n" + num + "\t" + time + "\n" + text + "\n\n");
 };
 
 function displayTrack(track){
@@ -45,10 +50,8 @@ function displayTrack(track){
         prev = "Prewiew: " + track.preview_url;
     };
 
-    console.log(artists);
-    console.log(song);
-    console.log(album);
-    console.log(prev);
+    console.log("\n" + artists + "\n" + song +  "\n" + album + "\n" + prev + "\n");
+    fs.appendFile('log.txt', "\n" + artists + "\n" + song +  "\n" + album + "\n" + prev + "\n");
 };
 
 function getMovieRating(ratings, source){
@@ -77,15 +80,17 @@ function formatPlot(plot){
 };
 
 function displayMovie(movie){
-    console.log("\n\tTitle: " +  movie.Title + "\n");
-    console.log("\tReleased in: " + movie.Year + "\n");
-    console.log("\tIMDB Rating: " + getMovieRating(movie.Ratings, "Internet Movie Database") + "\n");
-    console.log("\tRotten Tomatoes Rating: " + getMovieRating(movie.Ratings, "Rotten Tomatoes") + "\n");
-    console.log("\tProcuded in: " + movie.Country + "\n");
-    console.log("\tLanguage: " + movie.Language + "\n");
-    console.log("\tPlot: " + formatPlot(movie.Plot) + "\n");
-    console.log("\tActors: " + movie.Actors + "\n");
+
+    //ugly code that mamkes the makes the console logs more eye friendly
+    var movie = "\n\tTitle: " +  movie.Title + "\n\n\tReleased in: " + movie.Year + "\n\n\tIMDB Rating: " + getMovieRating(movie.Ratings, "Internet Movie Database") +
+    "\n\n\tRotten Tomatoes Rating: " + getMovieRating(movie.Ratings, "Rotten Tomatoes") + "\n\n\tProcuded in: " + movie.Country + "\n\n\tLanguage: " + movie.Language +
+    "\n\n\tPlot: " + formatPlot(movie.Plot) + "\n\n\tActors: " + movie.Actors + "\n";
+
+    console.log(movie);
+    fs.appendFile('log.txt', movie);
 };
+
+ 
 
 function main(cmd, search){
 
@@ -106,6 +111,7 @@ function main(cmd, search){
                     displayTweet(parseInt(i) + 1, tweets[i].created_at, tweets[i].full_text);
                 };
             };
+
         });
     }
     else if(cmd === "spotify-this-song"){
